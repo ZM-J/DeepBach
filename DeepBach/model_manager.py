@@ -170,8 +170,8 @@ class DeepBach:
         # randomize regenerated part
         if random_init:
             a, b = time_index_range_ticks
-            tensor_chorale[:, a:b] = self.dataset.random_score_tensor(
-                b - a)
+            tensor_chorale[voice_index_range, a:b] = self.dataset.random_score_tensor(
+                b - a)[voice_index_range, :]
 
         tensor_chorale = self.parallel_gibbs(
             tensor_chorale=tensor_chorale,
@@ -216,7 +216,6 @@ class DeepBach:
         to regenerate only the portion of the score between voice_index a and b
         :return: (num_voices, chorale_length) tensor
         """
-        start_voice, end_voice = voice_index_range
         # add batch_dimension
         tensor_chorale = tensor_chorale.unsqueeze(0)
         tensor_chorale_no_cuda = tensor_chorale.clone()
@@ -237,7 +236,7 @@ class DeepBach:
             time_indexes_ticks = {}
             probas = {}
 
-            for voice_index in range(start_voice, end_voice):
+            for voice_index in voice_index_range:
                 batch_notes = []
                 batch_metas = []
 
@@ -285,7 +284,7 @@ class DeepBach:
                 probas[voice_index] = nn.Softmax(dim=1)(probas[voice_index])
 
             # update all predictions
-            for voice_index in range(start_voice, end_voice):
+            for voice_index in voice_index_range:
                 for batch_index in range(batch_size_per_voice):
                     probas_pitch = probas[voice_index][batch_index]
 

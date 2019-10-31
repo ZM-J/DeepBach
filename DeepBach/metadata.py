@@ -247,3 +247,52 @@ class FermataMetadatas(Metadata):
         # fermata every 2 bars
         return np.array([1 if i % 32 > 28 else 0
                          for i in range(length)])
+
+
+class BeatFermatas(Metadata):
+    def __init__(self):
+        self.is_global = False
+        self.num_values = 5
+
+    def get_index(self, value):
+        return value
+
+    def get_value(self, index):
+        return index
+    
+    # Not used now
+    def _get_another_beat_sequence(self, ts):
+        return [int(8*_) for _ in ts[0].accentSequence.flatWeight]
+
+    def _get_beat_sequence(self, ts):
+        # Built-in Beat information
+        BEAT_4_4 = [4, 0, 1, 0,
+                    2, 0, 1, 0,
+                    3, 0, 1, 0,
+                    2, 0, 1, 0]
+        BEAT_3_4 = [4, 0, 1, 0,
+                    2, 0, 1, 0,
+                    2, 0, 1, 0]
+        BEAT_2_4 = [4, 0, 1, 0,
+                    2, 0, 1, 0]
+        ret_dict = {
+            '4/4': BEAT_4_4,
+            '3/4': BEAT_3_4,
+            '2/4': BEAT_2_4
+        }
+        return ret_dict[ts[0].ratioString]
+
+    def evaluate(self, chorale):
+        # suppose all pieces start on a beat
+        length = int(chorale.duration.quarterLength * SUBDIVISION)
+        # Time Sequence checking
+        ts = chorale.getTimeSignatures()
+
+        # TODO: How to deal with cases when ts has multiple elements?
+        bs = _get_beat_sequence(self, ts)
+        
+        # check info
+        return np.array([bs[_ % len(bs)] for _ in range(length)])
+
+    def generate(self, length):
+        raise NotImplementedError

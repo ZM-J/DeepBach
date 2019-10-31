@@ -10,6 +10,7 @@ from DatasetManager.metadata import FermataMetadata, TickMetadata, KeyMetadata
 
 from DeepBach.model_manager import DeepBach
 
+from choralefy import choralefy
 
 @click.command()
 @click.option('--note_embedding_dim', default=20,
@@ -30,10 +31,12 @@ from DeepBach.model_manager import DeepBach
               help='number of training epochs')
 @click.option('--train', is_flag=True,
               help='train the specified model for num_epochs')
-@click.option('--num_iterations', default=500,
+@click.option('--num_iterations', default=2500,
               help='number of parallel pseudo-Gibbs sampling iterations')
 @click.option('--sequence_length_ticks', default=64,
               help='length of the generated chorale (in ticks)')
+@click.option('--input_midi', default='MyInput/chorale_7_soprano.mid',
+              help='input midi for prediction')
 def main(note_embedding_dim,
          meta_embedding_dim,
          num_layers,
@@ -45,6 +48,7 @@ def main(note_embedding_dim,
          train,
          num_iterations,
          sequence_length_ticks,
+         input_midi
          ):
     dataset_manager = DatasetManager()
 
@@ -83,11 +87,26 @@ def main(note_embedding_dim,
         deepbach.cuda()
 
     print('Generation')
-    score, tensor_chorale, tensor_metadata = deepbach.generation(
-        num_iterations=num_iterations,
-        sequence_length_ticks=sequence_length_ticks,
-    )
-    score.show('txt')
+
+    if (input_midi != ''):
+        input_chorale = choralefy(input_midi)
+        
+        input_tensor = bach_chorales_dataset.get_score_tensor(input_chorale, 0., input_chorale.flat.highestTime)
+        input_metadata = bach_chorales_dataset.get_metadata_tensor(input_chorale)
+
+        score, tensor_chorale, tensor_metadata = deepbach.generation(
+            num_iterations=num_iterations,
+            tensor_chorale=input_tensor,
+            tensor_metadata=input_metadata,
+            sequence_length_ticks=sequence_length_ticks,
+            random_init=True,
+            voice_index_range=[1,2,3]
+        )
+    else:
+        score, tensor_chorale, tensor_metadata = deepbach.generation(
+            num_iterations=num_iterations,
+            sequence_length_ticks=sequence_length_ticks,
+        )
     score.show()
 
 
