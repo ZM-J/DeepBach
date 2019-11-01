@@ -262,6 +262,17 @@ class BeatFermatas(Metadata):
     
     # Not used now
     def _get_another_beat_sequence(self, ts):
+        '''
+        >>> ts = meter.TimeSignature('4/4')
+        >>> ts.accentSequence.flatWeight
+        [1.0, 0.125, 0.25, 0.125, 0.5, 0.125, 0.25, 0.125]
+        >>> ts = meter.TimeSignature('3/4')
+        >>> ts.accentSequence.flatWeight
+        [1.0, 0.125, 0.25, 0.125, 0.5, 0.125, 0.25, 0.125, 0.5, 0.125, 0.25, 0.125]
+        >>> ts = meter.TimeSignature('2/4')
+        >>> ts.accentSequence.flatWeight
+        [1.0, 0.125, 0.25, 0.125, 0.5, 0.125, 0.25, 0.125]
+        '''
         return [int(8*_) for _ in ts[0].accentSequence.flatWeight]
 
     def _get_beat_sequence(self, ts):

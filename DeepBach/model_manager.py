@@ -153,7 +153,7 @@ class DeepBach:
             time_index_range_ticks = [a_ticks + timesteps_ticks, b_ticks + timesteps_ticks]
 
         if voice_index_range is None:
-            voice_index_range = [0, self.dataset.num_voices]
+            voice_index_range = [_ for _ in range(self.dataset.num_voices)]
 
         tensor_chorale = self.dataset.extract_score_tensor_with_padding(
             tensor_score=tensor_chorale,
