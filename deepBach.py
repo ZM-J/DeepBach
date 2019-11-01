@@ -3,6 +3,7 @@
 """
 
 import click
+import os
 
 from DatasetManager.chorale_dataset import ChoraleDataset
 from DatasetManager.dataset_manager import DatasetManager
@@ -50,6 +51,9 @@ def main(note_embedding_dim,
          sequence_length_ticks,
          input_midi
          ):
+    
+    os.environ['CUDA_VISIBLE_DEVICES'] = '3'
+
     dataset_manager = DatasetManager()
 
     metadatas = [
